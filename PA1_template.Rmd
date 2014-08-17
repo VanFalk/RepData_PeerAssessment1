@@ -1,20 +1,128 @@
-# Reproducible Research: Peer Assessment 1
+Peer Assessment 1
+---------------
+**Jon Rogers**
 
+Let's load the necessary libraries and our data from the working directory
 
-## Loading and preprocessing the data
+```{r, echo = T}
+library(reshape2)
+library(ggplot2)
+activity <- read.csv("activity.csv")
+```
 
+**Total Steps Taken Per Day**
 
+1. Generate a histogram of the total steps taken each day:
 
-## What is mean total number of steps taken per day?
+```{r, echo = T}
+daily.steps <- aggregate(steps ~ date, data = activity, FUN = sum)
+barplot(daily.steps$steps, names.arg = daily.steps$date, xlab = "Date", ylab = "Total Steps")
+```
 
+2. Report the mean and median total number of steps taken:
 
+The Mean:
 
-## What is the average daily activity pattern?
+```{r, echo = T}
+mean(daily.steps$steps)
+```
 
+The Median:
 
+```{r, echo = T}
+median(daily.steps$steps)
+```
 
-## Imputing missing values
+**Daily Activity Pattern**
 
+1. Make a time series plot (i.e. type = "l") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all days (y-axis)
 
+```{r, echo = T}
+interval.steps <- aggregate(steps ~ interval, data = activity, FUN = mean)
+plot(interval.steps, type = "l", xlab = "Interval ID", ylab = "Average Steps")
+```
 
-## Are there differences in activity patterns between weekdays and weekends?
+2. Which 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps?
+
+```{r, echo = T}
+interval.steps$interval[which.max(interval.steps$steps)]
+```
+
+**Impute Missing Values**
+
+1. Calculate and report the total number of missing values in the dataset
+
+```{r, echo = T}
+sum(is.na(activity))
+```
+
+2. Devise a strategy for filling in all of the missing values in the dataset:
+
+I will fill in the missing data using 0 for the replacement. Yes this is the slacker way to go about it.
+
+3. Create a new dataset that is equal to the original dataset but with the missing data filled in...
+
+```{r, echo = T}
+newset <- activity
+newset$steps[is.na(newset$steps)] <- 0
+```
+
+4A. Make a histogram of the total number of steps taken each day:
+
+```{r, echo = T}
+newset.steps <- aggregate(steps ~ date, data = newset, FUN = sum)
+barplot(newset.steps$steps, names.arg = newset.steps$date, xlab = "Date", ylab = "Total Steps")
+```
+
+Calculate and report the mean and median total number of steps taken:
+
+The Mean:
+
+```{r, echo = T}
+mean(newset.steps$steps)
+```
+
+The Median:
+
+```{r, echo = T}
+median(newset.steps$steps)
+```
+
+4B. Do these values differ from the estimates from the first part of the assignment? 
+
+Yes. The values are lower becuase of the influence of the zero values replacing the NA's in my strategy. 
+
+4C. What is the impact of imputing missing data on the estimates of the total daily number of steps?
+
+There is an impact on the mean and a small one on the median from the missing data. Using zeros to replace NA's brought both of them down (no surprise) becuase in the inital analysis NA's were discarded.
+
+**Activity Patterns on Weekdays vs. Weekends**
+
+1. Create a new factor variable in the dataset with two levels – “weekday” and “weekend” indicating whether a given date is a weekday or weekend day.
+
+```{r, echo = T}
+daytype <- function(date) {
+    if (weekdays(as.Date(date)) %in% c("Saturday", "Sunday")) {
+        "Weekend"
+    } else {
+        "Weekday"
+    }
+}
+newset$daytype <- as.factor(sapply(activity$date, daytype))
+```
+
+2. Make a panel plot containing a time series plot (i.e. type = "l" ) of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all weekday days or weekend days (y-axis). 
+
+```{r, echo = T}
+### Alternate code for personal notes (messes with Xaxis)
+# newset$interval <- as.factor(newset$interval)
+### Daily and Interval Average saved for personal use:
+# avg_steps_days = dcast(molten_data, date ~ variable, mean)
+# avg_steps_days = dcast(molten_data, interval ~ variable, fun.aggregate = mean)
+
+molten_data = melt(newset, id = c("interval", "date", "daytype"))
+avg_steps_days = dcast(molten_data, interval + daytype ~ variable, fun.aggregate = mean)
+
+zPlot <- ggplot(avg_steps_days,aes(x = interval, y = steps, group = daytype, colour = factor(daytype))) 
+zPlot + geom_path() + facet_grid(daytype ~ .) + theme(legend.position="none")
+```
