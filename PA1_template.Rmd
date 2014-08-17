@@ -26,12 +26,15 @@ The Mean:
 ```{r, echo = T}
 mean(daily.steps$steps)
 ```
+The mean is 10,766 steps
 
 The Median:
 
 ```{r, echo = T}
 median(daily.steps$steps)
 ```
+
+The median is 10,765 steps
 
 **Daily Activity Pattern**
 
@@ -48,6 +51,8 @@ plot(interval.steps, type = "l", xlab = "Interval ID", ylab = "Average Steps")
 interval.steps$interval[which.max(interval.steps$steps)]
 ```
 
+The interval is #835
+
 **Impute Missing Values**
 
 1. Calculate and report the total number of missing values in the dataset
@@ -55,6 +60,8 @@ interval.steps$interval[which.max(interval.steps$steps)]
 ```{r, echo = T}
 sum(is.na(activity))
 ```
+
+The total number of missing values is 2,304
 
 2. Devise a strategy for filling in all of the missing values in the dataset:
 
@@ -82,11 +89,15 @@ The Mean:
 mean(newset.steps$steps)
 ```
 
+The mean is 9,354
+
 The Median:
 
 ```{r, echo = T}
 median(newset.steps$steps)
 ```
+
+The median is 10,395
 
 4B. Do these values differ from the estimates from the first part of the assignment? 
 
